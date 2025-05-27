@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestor de Citas Consulares</title>
+  <!-- Bootstrap + FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Fondo degradado animado */
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      background: linear-gradient(-45deg, #667eea, #764ba2, #ff758c, #ff7eb3);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    /* Sidebar */
+    .sidebar {
+      background: rgba(255,255,255,0.85);
+      min-width: 250px;
+      max-width: 250px;
+      padding: 1rem;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      height: 100vh;
+      position: fixed;
+      overflow-y: auto;
+    }
+    .sidebar a {
+      color: #333;
+      border-radius: 0.5rem;
+      transition: background .2s;
+    }
+    .sidebar a:hover, .sidebar .active {
+      background: rgba(0,0,0,0.05);
+    }
+    /* Contenido principal */
+    .content {
+      margin-left: 260px;
+      padding: 2rem;
+      width: calc(100% - 260px);
+      overflow-y: auto;
+    }
+    .card-stat {
+      border-radius: 1rem;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+    .card {
+      border-radius: 1rem;
+    }
+    table {
+      background: rgba(255,255,255,0.9);
+      border-radius: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar d-flex flex-column">
+    <a href="{{ url_for('index') }}" class="d-flex align-items-center mb-4 text-decoration-none fw-bold">
+      <i class="fas fa-calendar-day fa-2x me-2"></i>
+      <span class="fs-4">Gestor Citas</span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+      <li class="nav-item">
+        <a href="{{ url_for('index') }}" class="nav-link active">
+          <i class="fas fa-eye me-2"></i>Visión
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('agregar') }}" class="nav-link text-dark">
+          <i class="fas fa-user me-2"></i>Agregar Usuario
+        </a>
+      </li>
+      <li>
+        <a href="{{ url_for('control_panel') }}" class="nav-link text-dark">
+          <i class="fas fa-cog me-2"></i>Config
+        </a>
+      </li>
+    </ul>
+    <hr>
+    <div class="mt-auto">
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-danger w-100">
+        <i class="fas fa-sign-out-alt me-2"></i>Salir
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3">
+        <div class="card card-stat p-3 text-center">
+          <div class="card-body">
+            <h6 class="text-muted">CITAS TOTALES</h6>
+            <h3>{{ perfiles|length }}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card card-stat p-3 text-center">
+          <div class="card-body">
+            <h6 class="text-muted">CITAS LISTAS</h6>
+            {% set listas = perfiles|selectattr('cita_confirmada')|list|length %}
+            <h3>{{ listas }}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card card-stat p-3 text-center">
+          <div class="card-body">
+            <h6 class="text-muted">CITAS PENDIENTES</h6>
+            {% set pendientes = perfiles|selectattr('estado','equalto','pendiente')|list|length %}
+            <h3>{{ pendientes }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de estado -->
+    <div class="card mb-4 shadow-sm p-3">
+      <h5 class="mb-3">Estado de las Citas</h5>
+      <canvas id="statusChart" height="100"></canvas>
+    </div>
+
+    <!-- Tabla de perfiles -->
+    <div class="card shadow-sm p-3">
+      <h5 class="mb-3">Perfiles Registrados</h5>
+      <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+          <thead class="table-dark rounded-top">
+            <tr>
+              <th>ID</th><th>Nombre</th><th>Correo</th><th>Usuario</th>
+              <th>Estado</th><th>Confirmada</th><th>Creado</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for perfil in perfiles %}
+            <tr>
+              <td>{{ perfil.id }}</td>
+              <td>{{ perfil.nombre }}</td>
+              <td>{{ perfil.correo }}</td>
+              <td>{{ perfil.usuario_portal }}</td>
+              <td>{{ perfil.estado }}</td>
+              <td>{{ 'Sí' if perfil.cita_confirmada else 'No' }}</td>
+              <td>{{ perfil.fecha_creacion.strftime('%Y-%m-%d') }}</td>
+              <td>
+                <a href="{{ url_for('editar', id=perfil.id) }}" class="btn btn-sm btn-primary me-1"><i class="fas fa-edit"></i></a>
+                <a href="{{ url_for('eliminar', id=perfil.id) }}" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="text-center py-3">No hay perfiles aún.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
