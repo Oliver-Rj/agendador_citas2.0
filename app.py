@@ -1,30 +1,49 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from config import Config
 from models import db, Perfil, Usuario
+from flask_migrate import Migrate
 import threading, time
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = app.config.get('SECRET_KEY', 'cambia_esto_por_una_clave_segura')
 
 db.init_app(app)
+migrate = Migrate(app, db)
 
 # --- Variables GLOBALES de control del bot ---
 bot_thread     = None
 stop_event     = None
-interval       = (5, 10)           # (minutos, segundos)
-allowed_months = [5, 6]            # rango de meses por defecto (Mayo–Junio)
-max_workers    = 2                 # instancias de Chrome en paralelo
+interval       = (5, 10)
+allowed_months = [5, 6]
+max_workers    = 2
+last_attempt   = None
+refresh_seconds = 60
+app.config['REFRESH_INTERVAL'] = refresh_seconds
 # --------------------------------------------
 
+@app.route('/config_refresh', methods=['POST'])
+def config_refresh():
+    global refresh_seconds
+    data = request.get_json() or {}
+    try:
+        seconds = int(data.get('refresh_seconds', 60))
+        refresh_seconds = max(5, seconds)
+        app.config['REFRESH_INTERVAL'] = refresh_seconds
+        return f"Tiempo de refresco actualizado a {refresh_seconds}s"
+    except Exception as e:
+        return f"Error al actualizar: {e}", 400
+
 def run_loop(stop_event):
-    """Bucle que reprograma perfiles cada intervalo."""
+    global last_attempt
     from automation import get_pending_profiles, schedule_for
     while not stop_event.is_set():
+        last_attempt = datetime.now()
         perfiles = get_pending_profiles()
         if perfiles:
-            print(f"🔀 Lanzando hasta {max_workers} navegadores en paralelo...")
+            print(f"\U0001f500 Lanzando hasta {max_workers} navegadores en paralelo...")
             from concurrent.futures import ThreadPoolExecutor, as_completed
             with ThreadPoolExecutor(max_workers=max_workers) as execr:
                 futures = {execr.submit(schedule_for, p): p for p in perfiles}
@@ -33,7 +52,7 @@ def run_loop(stop_event):
                     try:
                         fut.result()
                     except Exception:
-                        print(f"❌ Error inesperado en {perfil.correo}")
+                        print(f"\u274c Error inesperado en {perfil.correo}")
         else:
             print("ℹ️ No hay perfiles pendientes.")
         total_secs = interval[0] * 60 + interval[1]
@@ -42,7 +61,6 @@ def run_loop(stop_event):
                 break
             time.sleep(1)
 
-# --- RUTAS DE AUTENTICACION & CRUD ---
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method=='POST':
@@ -88,7 +106,8 @@ def agregar():
             nombre=request.form['nombre'],
             correo=request.form['correo'],
             usuario_portal=request.form['usuario_portal'],
-            contrasena_portal=request.form['contrasena']
+            contrasena_portal=request.form['contrasena'],
+            schedule_code=request.form.get('schedule_code')
         )
         db.session.add(nuevo); db.session.commit()
         return redirect(url_for('index'))
@@ -104,6 +123,7 @@ def editar(id):
         perfil.correo            = request.form['correo']
         perfil.usuario_portal    = request.form['usuario_portal']
         perfil.contrasena_portal = request.form['contrasena']
+        perfil.schedule_code     = request.form.get('schedule_code')
         db.session.commit()
         return redirect(url_for('index'))
     return render_template('editar_usuario.html', perfil=perfil)
@@ -115,18 +135,33 @@ def eliminar(id):
     perfil = Perfil.query.get_or_404(id)
     db.session.delete(perfil); db.session.commit()
     return redirect(url_for('index'))
-# --------------------------------------------
 
-# --- PANEL DE CONTROL DEL BOT ---
 @app.route('/control')
 def control_panel():
     if 'user' not in session:
         return redirect(url_for('login'))
+    now = datetime.now()
+    total_secs = interval[0] * 60 + interval[1]
+    next_try = (last_attempt + timedelta(seconds=total_secs)) if last_attempt else (now + timedelta(seconds=total_secs))
     return render_template('control.html',
                            interval_min=interval[0],
                            interval_sec=interval[1],
                            allowed_months=allowed_months,
-                           max_workers=max_workers)
+                           max_workers=max_workers,
+                           bot_status=bot_thread.is_alive() if bot_thread else False,
+                           current_time=now.strftime('%H:%M:%S'),
+                           next_attempt=next_try.strftime('%H:%M:%S'),
+                           refresh_seconds=refresh_seconds)
+
+@app.route('/control_data')
+def control_data():
+    now = datetime.now()
+    total_secs = interval[0] * 60 + interval[1]
+    next_try = (last_attempt + timedelta(seconds=total_secs)) if last_attempt else (now + timedelta(seconds=total_secs))
+    return jsonify({
+        'current_time': now.strftime('%H:%M:%S'),
+        'next_attempt': next_try.strftime('%H:%M:%S')
+    })
 
 @app.route('/config_interval', methods=['POST'])
 def config_interval():
@@ -173,10 +208,8 @@ def stop_bot():
         stop_event.set()
         return "Bot detenido."
     return "El bot no estaba en ejecucion.", 400
-# --------------------------------------------
 
 def create_tables():
-    """Crea las tablas si no existen."""
     with app.app_context():
         db.create_all()
 

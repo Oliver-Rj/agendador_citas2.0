@@ -27,10 +27,7 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       padding: 2rem;
     }
-    .btn-exit, .btn-primary {
-      border-radius: 50px;
-    }
-    .btn-info {
+    .btn-exit, .btn-primary, .btn-info {
       border-radius: 50px;
     }
   </style>
@@ -61,6 +58,10 @@
           <label for="contrasena" class="form-label">Contraseña del portal</label>
           <input type="password" class="form-control" id="contrasena" name="contrasena" required>
         </div>
+        <div class="mb-3">
+          <label for="schedule_code" class="form-label">Código de agenda</label>
+          <input type="text" class="form-control" id="schedule_code" name="schedule_code" required>
+        </div>
         <div class="d-flex justify-content-end gap-2">
           <button type="submit" class="btn btn-primary">
             <i class="fas fa-save me-1"></i> Guardar Perfil
@@ -74,5 +75,6 @@
   </div>
 </body>
 </html>
+
 
 

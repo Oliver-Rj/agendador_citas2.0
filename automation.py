@@ -13,16 +13,15 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import WebDriverException
-from app import allowed_months, app
+from selenium.common.exceptions import WebDriverException, TimeoutException
+from app import allowed_months, app, stop_event
 
-# --- Funciones para simular comportamiento humano ---
+refresh_seconds = app.config.get('REFRESH_INTERVAL', 60)
+
 def human_pause(min_s=0.3, max_s=1.2):
-    """Pausa aleatoria entre `min_s` y `max_s` segundos."""
     time.sleep(random.uniform(min_s, max_s))
 
 def human_move(driver):
-    """Mueve el ratón una pequeña distancia para simular navegación humana."""
     x = random.randint(-50, 50)
     y = random.randint(-50, 50)
     try:
@@ -30,26 +29,35 @@ def human_move(driver):
         human_pause(0.1, 0.4)
     except WebDriverException:
         pass
-# ------------------------------------------------------
+
+def conditional_sleep(duration):
+    for _ in range(duration):
+        if stop_event and stop_event.is_set():
+            print("🛑 Detención detectada durante la espera. Cancelando...")
+            return False
+        time.sleep(1)
+    return True
 
 def get_pending_profiles():
     with app.app_context():
         return Perfil.query.filter_by(estado='pendiente').all()
 
-
 def init_driver():
     opts = webdriver.ChromeOptions()
     opts.add_argument('--start-maximized')
-    # opts.add_argument('--headless')
     return webdriver.Chrome(options=opts)
 
+def sanitize_schedule_code(code):
+    return str(code).strip().replace(" ", "")
 
 def schedule_for(profile):
     driver = init_driver()
     try:
         print(f"🛫 Procesando {profile.correo}")
         human_pause(0.5, 1.0)
-        # 1) login con reintentos
+
+        # ——— Login con reintentos (hasta 3) ———
+        login_success = False
         for i in range(3):
             try:
                 human_move(driver)
@@ -57,195 +65,173 @@ def schedule_for(profile):
                 WebDriverWait(driver, 5).until(
                     EC.visibility_of_element_located((By.ID, 'user_email'))
                 )
+                driver.find_element(By.ID, 'user_email').send_keys(profile.correo)
+                driver.find_element(By.ID, 'user_password').send_keys(profile.contrasena_portal)
+                driver.find_element(By.CSS_SELECTOR, 'div.icheckbox.icheck-item').click()
+                driver.find_element(By.NAME, 'commit').click()
+                WebDriverWait(driver, 10).until(EC.url_contains('/niv'))
+                print('✔ Login OK')
+                login_success = True
                 break
-            except Exception:
-                if i == 2:
-                    raise
+            except WebDriverException:
+                print("❌ Fallo en carga de login, reintentando…")
                 human_pause(1, 2)
-        # credenciales
-        driver.find_element(By.ID, 'user_email').send_keys(profile.correo)
-        driver.find_element(By.ID, 'user_password').send_keys(profile.contrasena_portal)
-        driver.find_element(By.CSS_SELECTOR, 'div.icheckbox.icheck-item').click()
-        driver.find_element(By.NAME, 'commit').click()
-        WebDriverWait(driver, 10).until(EC.url_contains('/niv'))
-        print('✔ Login OK')
-        human_pause(0.3, 0.6)
-        # continuar si aparece
-        try:
-            WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.XPATH, "//*[normalize-space(text())='Continuar']"))
-            ).click()
-            human_pause(0.3, 0.6)
-        except:
-            pass
-        # ir a reprogramar
-        link = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//a[contains(normalize-space(.),'Reprogramar cita')]") )
-        )
-        driver.execute_script('arguments[0].scrollIntoView();', link)
-        link.click()
-        WebDriverWait(driver, 10).until(EC.url_contains('/schedule'))
-        human_pause(0.3, 0.6)
-        # abrir selector de fecha consular
-        driver.find_element(By.XPATH, "//*[normalize-space(text())='Reprogramar cita']").click()
-        date_input = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, 'appointments_consulate_appointment_date'))
-        )
-        driver.execute_script('arguments[0].scrollIntoView();', date_input)
-        date_input.click()
-        human_pause(0.3, 0.6)
-        # seleccionar consulado
-        Select(WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, 'appointments_consulate_appointment_facility_id'))
-        )).select_by_visible_text('Santo Domingo')
-        human_pause(0.3, 0.6)
-        # Paso 5: elegir fecha dentro del rango allowed_months (consular)
-        found = False
-        for month in allowed_months:
-            human_move(driver)
-            date_in = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.ID, 'appointments_consulate_appointment_date'))
-            )
-            driver.execute_script('arguments[0].scrollIntoView();', date_in)
-            date_in.click()
-            human_pause(0.3, 0.6)
-            WebDriverWait(driver, 5).until(
-                EC.visibility_of_element_located((By.CLASS_NAME, 'ui-datepicker-calendar'))
-            )
-            while True:
-                hdr_m = driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-month').text
-                hdr_y = driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-year').text
-                curr = datetime.datetime.strptime(f"{hdr_m} {hdr_y}", "%B %Y").month
-                if curr == month:
-                    break
-                driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-next').click()
-                human_pause(0.2, 0.4)
-            days = driver.find_elements(By.CSS_SELECTOR, 'td[data-handler="selectDay"] a')
-            if days:
-                days[0].click()
-                print(f"✔ Fecha consular seleccionada: {days[0].text}/{month}")
-                human_pause(0.2, 0.6)
-                found = True
-                break
-        if not found:
-            print(f"⚠️ No hay fechas en meses {allowed_months} (consular)"); return
-        # Paso 6: selección horaria consulado (reintentar hasta encontrar)
-        human_move(driver)
-        while True:
+        if not login_success:
+            print(f"❌ No se pudo hacer login para {profile.correo} tras 3 intentos.")
+            with app.app_context():
+                profile.estado = 'fallo'
+                db.session.commit()
+            driver.quit()
+            print(f"🚪 Cerrado para {profile.correo} (fallo en login)")
+            return
+
+        schedule_code = sanitize_schedule_code(profile.schedule_code)
+        if not schedule_code:
+            print(f"❌ El perfil '{profile.correo}' no tiene código de agenda (schedule_code).")
+            with app.app_context():
+                profile.estado = 'fallo'
+                db.session.commit()
+            driver.quit()
+            print(f"🚪 Cerrado para {profile.correo} (sin schedule code)")
+            return
+
+        terminado = False
+        while not terminado:
             try:
-                # refrescar opciones de hora clickeando fecha
-                date_input_c = driver.find_element(By.ID, 'appointments_consulate_appointment_date')
-                date_input_c.click(); human_pause(0.3, 0.6)
-                time_elem = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.ID, 'appointments_consulate_appointment_time'))
+                target_url = f"https://ais.usvisa-info.com/es-do/niv/schedule/{schedule_code}/appointment"
+                driver.get(target_url)
+                WebDriverWait(driver, 10).until(
+                    EC.url_contains(f"/schedule/{schedule_code}/appointment")
                 )
-                sel = Select(time_elem)
-                opts = [o for o in sel.options if o.get_attribute('value')]
-                if opts:
-                    sel.select_by_value(opts[0].get_attribute('value'))
-                    print('✔ Hora consulado seleccionada')
-                    break
-                else:
-                    print('⚠️ Sin horarios consulado disponibles, reintentando...')
-                    human_pause(5, 10)
+                print(f"✔ Redirigido a página de agendamiento: {schedule_code}")
+
+                # Buscar fecha y hora
+                human_move(driver)
+                btn = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.ID, 'appointments_consulate_appointment_date'))
+                )
+                driver.execute_script('arguments[0].scrollIntoView(true);', btn)
+                btn.click()
+                human_pause(0.3, 0.6)
+                WebDriverWait(driver, 5).until(
+                    EC.visibility_of_element_located((By.CLASS_NAME, 'ui-datepicker-calendar'))
+                )
+
+                found = False
+                for month in allowed_months:
+                    target_reached = False
+                    while True:
+                        hdr_m = driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-month').text
+                        hdr_y = driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-year').text
+                        year_val = int(hdr_y)
+                        current_month = datetime.datetime.strptime(f"{hdr_m} {hdr_y}", "%B %Y").month
+                        if year_val > datetime.datetime.now().year:
+                            break
+                        if year_val == datetime.datetime.now().year and current_month < month:
+                            driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-next').click()
+                            human_pause(0.2, 0.4)
+                            continue
+                        if year_val == datetime.datetime.now().year and current_month == month:
+                            target_reached = True
+                        break
+                    if not target_reached:
+                        continue
+                    days2 = driver.find_elements(By.CSS_SELECTOR, 'td[data-handler="selectDay"] a')
+                    for day2 in days2:
+                        day2.click()
+                        human_pause(0.3, 0.6)
+                        try:
+                            time_elem2_check = WebDriverWait(driver, 2).until(
+                                EC.presence_of_element_located((By.ID, 'appointments_asc_appointment_time'))
+                            )
+                            sel2_check = Select(time_elem2_check)
+                            valid_times2 = [o for o in sel2_check.options if o.get_attribute('value')]
+                            if valid_times2:
+                                print(f"✔ Fecha CAS y hora disponible: {day2.text}/{month}")
+                                found = True
+                                break
+                            else:
+                                btn2 = driver.find_element(By.ID, 'appointments_asc_appointment_date')
+                                driver.execute_script("arguments[0].click();", btn2)
+                                human_pause(0.3, 0.6)
+                                continue
+                        except TimeoutException:
+                            btn2 = driver.find_element(By.ID, 'appointments_asc_appointment_date')
+                            driver.execute_script("arguments[0].click();", btn2)
+                            human_pause(0.3, 0.6)
+                            continue
+                    if found:
+                        break
+
+                if found:
+                    human_move(driver)
+                    cas_sel = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.ID, 'appointments_asc_appointment_time'))
+                    )
+                    sel2 = Select(cas_sel)
+                    opts2 = [o for o in sel2.options if o.get_attribute('value')]
+                    if opts2:
+                        sel2.select_by_value(opts2[0].get_attribute('value'))
+                        print('✔ Hora CAS seleccionada')
+                        # Hacer clic en “Reprogramar” y confirmar
+                        human_move(driver)
+                        btn_reprogramar = WebDriverWait(driver, 20).until(
+                            lambda d: d.find_element(By.ID, "appointments_submit")
+                        )
+                        WebDriverWait(driver, 30).until(lambda d: btn_reprogramar.is_enabled())
+                        driver.execute_script("arguments[0].scrollIntoView(true);", btn_reprogramar)
+                        btn_reprogramar.click()
+                        WebDriverWait(driver, 10).until(
+                            EC.visibility_of_element_located((By.CSS_SELECTOR, ".modal-content"))
+                        )
+                        WebDriverWait(driver, 5).until(
+                            EC.element_to_be_clickable((By.XPATH, "//*[normalize-space(text())='Confirmar']"))
+                        ).click()
+                        WebDriverWait(driver, 10).until(EC.url_contains('/confirmation'))
+                        conf = WebDriverWait(driver, 10).until(
+                            EC.visibility_of_element_located((By.CSS_SELECTOR, '.confirmation-number'))
+                        ).text
+                        print(f"✔ Confirmación final: {conf}")
+                        with app.app_context():
+                            profile.estado = 'reagendado'
+                            profile.cita_confirmada = True
+                            profile.id_usuario_cita = conf
+                            db.session.commit()
+                        print('🎉 Proceso completado')
+                        terminado = True  # Solo aquí sale y cierra
+                        break
+
+                # Si no encontró, o si hubo error, simplemente repite el ciclo
+                if stop_event and stop_event.is_set():
+                    print("🛑 Detenido por señal de parada.")
+                    terminado = True
+
+            except (TimeoutException, WebDriverException) as e:
+                print(f"⚠️ Error temporal en la página: {e}. Intentando de nuevo…")
+                human_pause(2, 5)  # Espera y vuelve a intentar
+
             except Exception as e:
-                print(f"⚠️ Error al obtener hora consulado: {e}, reintentando...")
-                human_pause(5, 10)
-        # Paso 7: seleccionar ASC
-        human_move(driver)
-        asc = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, 'appointments_asc_appointment_facility_id'))
-        )
-        Select(asc).select_by_visible_text('Santo Domingo ASC')
-        print('✔ ASC location seleccionado')
-        human_pause(0.3, 0.6)
-        # Paso 8: elegir fecha CAS
-        human_move(driver)
-        found_cas = False
-        for month in allowed_months:
-            date2 = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.ID, 'appointments_asc_appointment_date'))
-            )
-            driver.execute_script('arguments[0].scrollIntoView();', date2)
-            date2.click(); human_pause(0.3, 0.6)
-            WebDriverWait(driver, 5).until(
-                EC.visibility_of_element_located((By.CLASS_NAME, 'ui-datepicker-calendar'))
-            )
-            while True:
-                hdr_m = driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-month').text
-                hdr_y = driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-year').text
-                curr = datetime.datetime.strptime(f"{hdr_m} {hdr_y}", "%B %Y").month
-                if curr == month:
-                    break
-                driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-next').click(); human_pause(0.2, 0.4)
-            days2 = driver.find_elements(By.CSS_SELECTOR, 'td[data-handler="selectDay"] a')
-            if days2:
-                days2[0].click(); print(f"✔ Fecha CAS seleccionada: {days2[0].text}/{month}"); human_pause(0.2,0.6)
-                found_cas = True
-                break
-        if not found_cas:
-            print(f"⚠️ No hay fechas en meses {allowed_months} (CAS)"); return
-        # Paso 9: hora CAS
-        human_move(driver)
-        cas_sel = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, 'appointments_asc_appointment_time'))
-        )
-        sel2 = Select(cas_sel)
-        opts2 = [o for o in sel2.options if o.get_attribute('value')]
-        if opts2:
-            sel2.select_by_value(opts2[0].get_attribute('value'))
-            print('✔ Hora CAS seleccionada')
-        else:
-            print('⚠️ Sin horarios CAS disponibles'); return
-        # Paso 10: reprogramar y confirmar
-        human_move(driver)
-        # 1) Localiza el botón “Reprogramar” y espera a que se habilite
-        btn_reprogramar = WebDriverWait(driver, 20).until(
-            lambda d: d.find_element(By.ID, "appointments_submit")
-        )
-        # 2) Espera a que se habilite
-        WebDriverWait(driver, 30).until(lambda d: btn_reprogramar.is_enabled())
-        # 3) Llévalo al viewport
-        driver.execute_script("arguments[0].scrollIntoView(true);", btn_reprogramar)
-        # 4) Haz clic
-        btn_reprogramar.click()
+                # Cualquier error crítico SÍ cierra y marca como fallo
+                print(f"❌ Error grave {profile.correo}: {e}")
+                traceback.print_exc()
+                with app.app_context():
+                    profile.estado = 'fallo'
+                    db.session.commit()
+                driver.quit()
+                print(f"🚪 Cerrado para {profile.correo} (por excepción grave)")
+                return
 
-        # 5) Espera a que aparezca el modal
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, ".modal-content"))
-        )
+        driver.quit()
+        print(f"🚪 Cerrado para {profile.correo} (proceso terminado/stop)")
 
-        # 6) Localiza y clickea “Confirmar” usando su atributo data-disable-with-content
-        try:
-            WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.XPATH, "//*[normalize-space(text())='Confirmar']"))
-            ).click()
-            human_pause(0.3, 0.6)
-        except:
-            pass
-
-        # 7) Ahora sí, espera la página de confirmación y extrae el número
-        WebDriverWait(driver, 10).until(EC.url_contains('/confirmation'))
-        conf = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, '.confirmation-number'))
-        ).text
-        print(f"✔ Confirmación final: {conf}")
-        with app.app_context():
-            profile.estado = 'reagendado'
-            profile.cita_confirmada = True
-            profile.id_usuario_cita = conf
-            db.session.commit()
-        print('🎉 Proceso completado')
     except Exception as e:
-        print(f"❌ Error {profile.correo}: {e}")
+        print(f"❌ Error fatal {profile.correo}: {e}")
         traceback.print_exc()
         with app.app_context():
             profile.estado = 'fallo'
             db.session.commit()
-    finally:
         driver.quit()
-        print(f"🚪 Cerrado para {profile.correo}")
-
+        print(f"🚪 Cerrado para {profile.correo} (por excepción fatal)")
 
 def main_loop():
     while True:
@@ -256,11 +242,12 @@ def main_loop():
                     exe.submit(schedule_for, p)
         else:
             print('ℹ️ Sin pendientes')
-        time.sleep(5*60 + 10)
+        if not conditional_sleep(app.config.get('REFRESH_INTERVAL', 2)):
+            break
 
 if __name__ == '__main__':
-    main_loop()
-
-
-
-
+    try:
+        main_loop()
+    except Exception as e:
+        print(f"Error en el bucle principal: {e}")
+        traceback.print_exc()

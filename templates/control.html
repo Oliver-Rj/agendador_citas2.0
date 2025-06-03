@@ -8,10 +8,12 @@
   <!-- Bootstrap + FontAwesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- MIS ESTILOS GLOBALES -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
   <style>
+    :root {
+      --bot-status-color: {{ 'green' if bot_status else 'gray' }};
+    }
     body {
       background: linear-gradient(120deg, #e0c3fc, #8ec5fc);
       background-size: 200% 200%;
@@ -52,10 +54,18 @@
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: 5px;
+      background-color: var(--bot-status-color);
+      box-shadow: 0 0 6px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 <body>
-  <!-- ===== SIDEBAR ==================== -->
   <div class="sidebar">
     <a href="{{ url_for('index') }}" class="d-flex align-items-center text-decoration-none mb-4">
       <i class="fas fa-calendar-day fa-lg me-2"></i>
@@ -75,12 +85,17 @@
     </div>
   </div>
 
-  <!-- ===== CONTENIDO PRINCIPAL ================================= -->
   <div class="content text-center">
     <i class="fas fa-robot robot-icon mb-3"></i>
-    <h3 class="fw-bold mb-4">Panel de Control del Bot</h3>
+    <h3 class="fw-bold mb-4">Panel de Control del Bot <span class="status-indicator"></span></h3>
 
     <div class="card card-stat shadow-sm mb-4 p-4">
+      <p class="text-muted">
+        Tiempo actual de reintento: 
+        <strong>{{ interval_min }} minuto{{ 's' if interval_min != 1 else '' }} y {{ interval_sec }} segundo{{ 's' if interval_sec != 1 else '' }}</strong><br>
+        Hora actual: <strong>{{ current_time }}</strong><br>
+        Próximo intento estimado: <strong>{{ next_attempt }}</strong>
+      </p>
       <form id="config-form" class="row g-3">
         <div class="col-md-3">
           <label for="minutes" class="form-label">Minutos</label>
@@ -89,6 +104,10 @@
         <div class="col-md-3">
           <label for="seconds" class="form-label">Segundos</label>
           <input type="number" id="seconds" class="form-control" min="0" max="59" value="{{ interval_sec }}">
+        </div>
+        <div class="col-md-3">
+          <label for="refreshSeconds" class="form-label">Refrescar cada (s)</label>
+          <input type="number" id="refreshSeconds" class="form-control" min="5" value="{{ refresh_seconds }}">
         </div>
         <div class="col-md-3">
           <label for="startMonth" class="form-label">Mes inicio</label>
@@ -113,6 +132,9 @@
         <div class="col-12 d-flex gap-2 mt-3 justify-content-center">
           <button type="button" id="save-btn" class="btn btn-light text-primary flex-fill">
             <i class="fas fa-save me-2"></i>Guardar Intervalo
+          </button>
+          <button type="button" id="save-refresh-btn" class="btn btn-light text-primary flex-fill">
+            <i class="fas fa-sync-alt me-2"></i>Guardar Refresco
           </button>
           <button type="button" id="save-range-btn" class="btn btn-light text-primary flex-fill">
             <i class="fas fa-calendar-alt me-2"></i>Guardar Rango
@@ -145,22 +167,66 @@
       statusBox.classList.remove('d-none');
     }
     async function postJSON(url, data={}) {
-      const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
       const txt = await res.text();
-      showStatus(txt, res.ok?'success':'danger');
+      showStatus(txt, res.ok ? 'success' : 'danger');
     }
-    document.getElementById('save-btn').addEventListener('click', e => { e.preventDefault(); postJSON('/config_interval',{minutes:+minutes.value,seconds:+seconds.value}); });
-    document.getElementById('save-range-btn').addEventListener('click', e => { e.preventDefault(); postJSON('/config_range',{start_month:+startMonth.value,end_month:+endMonth.value}); });
-    document.getElementById('save-workers-btn').addEventListener('click', e => { e.preventDefault(); postJSON('/config_workers',{workers:+workers.value}); });
-    document.getElementById('start-btn').addEventListener('click', e => { e.preventDefault(); postJSON('/start_bot'); });
-    document.getElementById('stop-btn').addEventListener('click', e => { e.preventDefault(); postJSON('/stop_bot'); });
+
+    document.getElementById('save-btn').addEventListener('click', e => {
+      e.preventDefault();
+      postJSON('/config_interval', {
+        minutes: +minutes.value,
+        seconds: +seconds.value
+      });
+    });
+
+    document.getElementById('save-refresh-btn').addEventListener('click', e => {
+      e.preventDefault();
+      postJSON('/config_refresh', {
+        refresh_seconds: +refreshSeconds.value
+      });
+    });
+
+    document.getElementById('save-range-btn').addEventListener('click', e => {
+      e.preventDefault();
+      postJSON('/config_range', {
+        start_month: +startMonth.value,
+        end_month: +endMonth.value
+      });
+    });
+
+    document.getElementById('save-workers-btn').addEventListener('click', e => {
+      e.preventDefault();
+      postJSON('/config_workers', {
+        workers: +workers.value
+      });
+    });
+
+    document.getElementById('start-btn').addEventListener('click', e => {
+      e.preventDefault();
+      postJSON('/start_bot');
+    });
+
+    document.getElementById('stop-btn').addEventListener('click', e => {
+      e.preventDefault();
+      postJSON('/stop_bot');
+    });
+
+    setInterval(async () => {
+      try {
+        const res = await fetch('/control_data');
+        if (!res.ok) return;
+        const data = await res.json();
+        document.querySelector('strong:nth-of-type(2)').textContent = data.current_time;
+        document.querySelector('strong:nth-of-type(3)').textContent = data.next_attempt;
+      } catch (e) {
+        console.error("Error actualizando tiempos:", e);
+      }
+    }, 5000);
   </script>
 </body>
 </html>
-
-
-
-
-
-
-

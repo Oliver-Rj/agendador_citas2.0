@@ -8,7 +8,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* Fondo degradado animado */
     html, body { height: 100%; margin: 0; overflow: hidden; }
     body {
       background: linear-gradient(-45deg, #667eea, #764ba2, #ff758c, #ff7eb3);
@@ -22,7 +21,6 @@
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    /* Sidebar */
     .sidebar {
       background: rgba(255,255,255,0.85);
       min-width: 250px;
@@ -41,7 +39,6 @@
     .sidebar a:hover, .sidebar .active {
       background: rgba(0,0,0,0.05);
     }
-    /* Contenido principal */
     .content {
       margin-left: 260px;
       padding: 2rem;
@@ -59,6 +56,9 @@
     table {
       background: rgba(255,255,255,0.9);
       border-radius: 0.75rem;
+    }
+    .text-warning {
+      font-weight: bold;
     }
   </style>
 </head>
@@ -95,7 +95,6 @@
   </div>
 
   <div class="content">
-    <!-- Estadísticas -->
     <div class="row mb-4">
       <div class="col-md-4 mb-3">
         <div class="card card-stat p-3 text-center">
@@ -125,13 +124,11 @@
       </div>
     </div>
 
-    <!-- Gráfico de estado -->
     <div class="card mb-4 shadow-sm p-3">
       <h5 class="mb-3">Estado de las Citas</h5>
       <canvas id="statusChart" height="100"></canvas>
     </div>
 
-    <!-- Tabla de perfiles -->
     <div class="card shadow-sm p-3">
       <h5 class="mb-3">Perfiles Registrados</h5>
       <div class="table-responsive">
@@ -139,18 +136,25 @@
           <thead class="table-dark rounded-top">
             <tr>
               <th>ID</th><th>Nombre</th><th>Correo</th><th>Usuario</th>
-              <th>Estado</th><th>Confirmada</th><th>Creado</th><th>Acciones</th>
+              <th>Estado</th><th>Confirmada</th><th>Agendamiento</th><th>Creado</th><th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {% for perfil in perfiles %}
-            <tr>
+            <tr class="{% if not perfil.schedule_code %}table-warning{% endif %}">
               <td>{{ perfil.id }}</td>
               <td>{{ perfil.nombre }}</td>
               <td>{{ perfil.correo }}</td>
               <td>{{ perfil.usuario_portal }}</td>
               <td>{{ perfil.estado }}</td>
               <td>{{ 'Sí' if perfil.cita_confirmada else 'No' }}</td>
+              <td>
+                {% if perfil.schedule_code %}
+                  {{ perfil.schedule_code }}
+                {% else %}
+                  <span class="text-warning">⚠ Sin código</span>
+                {% endif %}
+              </td>
               <td>{{ perfil.fecha_creacion.strftime('%Y-%m-%d') }}</td>
               <td>
                 <a href="{{ url_for('editar', id=perfil.id) }}" class="btn btn-sm btn-primary me-1"><i class="fas fa-edit"></i></a>
@@ -158,7 +162,7 @@
               </td>
             </tr>
             {% else %}
-            <tr><td colspan="8" class="text-center py-3">No hay perfiles aún.</td></tr>
+            <tr><td colspan="9" class="text-center py-3">No hay perfiles aún.</td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -169,4 +173,5 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 

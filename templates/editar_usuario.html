@@ -29,9 +29,15 @@
         <input type="password" class="form-control" id="contrasena" name="contrasena"
                value="{{ perfil.contrasena_portal }}" required>
       </div>
+      <div class="mb-3">
+        <label for="schedule_code" class="form-label">Código de agenda</label>
+        <input type="text" class="form-control" id="schedule_code" name="schedule_code"
+               value="{{ perfil.schedule_code or '' }}" required>
+      </div>
       <button type="submit" class="btn btn-primary">Guardar Cambios</button>
       <a href="{{ url_for('index') }}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
   </div>
 </body>
 </html>
+
