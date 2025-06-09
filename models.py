@@ -19,7 +19,6 @@ class Perfil(db.Model):
     def __repr__(self):
         return f"<Perfil {self.id} {self.correo}>"
 
-
 class Usuario(db.Model):
     __tablename__ = 'usuarios'
     id = db.Column(db.Integer, primary_key=True)
@@ -30,3 +29,18 @@ class Usuario(db.Model):
     def __repr__(self):
         return f"<Usuario {self.username}>"
 
+# NUEVO MODELO DE CONFIGURACIÓN
+class Configuracion(db.Model):
+    __tablename__ = 'configuracion'
+    id = db.Column(db.Integer, primary_key=True)
+    meses = db.Column(db.String(50), default="5,6")  # Guarda lista como "5,6"
+    year = db.Column(db.Integer, default=datetime.now().year)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def get_meses(self):
+        """Devuelve la lista de meses como enteros."""
+        return [int(m) for m in self.meses.split(",") if m]
+
+    def set_meses(self, lista):
+        """Guarda una lista de meses (como [5, 6, 7])."""
+        self.meses = ",".join(str(m) for m in lista)

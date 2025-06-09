@@ -1,102 +1,46 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panel de Control · Gestor Citas</title>
-
-  <!-- Bootstrap + FontAwesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
   <style>
-    :root {
-      --bot-status-color: {{ 'green' if bot_status else 'gray' }};
-    }
     body {
-      background: linear-gradient(120deg, #e0c3fc, #8ec5fc);
-      background-size: 200% 200%;
-      animation: gradientBG 15s ease infinite;
-    }
-    @keyframes gradientBG {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
-    .sidebar {
-      background: #0d6efd;
-      color: #fff;
-      position: fixed;
-      width: 220px;
-      height: 100%;
-      padding: 1rem;
-    }
-    .sidebar a, .sidebar .nav-link {
-      color: #fff;
-    }
-    .sidebar .nav-link.active {
-      background-color: rgba(255,255,255,0.2);
-    }
-    .content {
-      margin-left: 240px;
-      padding: 2rem;
-    }
-    .card-stat, .btn, .btn-exit {
-      border-radius: 12px;
-    }
-    .robot-icon {
-      font-size: 4rem;
-      color: #0d6efd;
-      animation: spin 4s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      background: #f4f6f9;
     }
     .status-indicator {
       width: 12px;
       height: 12px;
       border-radius: 50%;
       display: inline-block;
-      margin-left: 5px;
-      background-color: var(--bot-status-color);
-      box-shadow: 0 0 6px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <a href="{{ url_for('index') }}" class="d-flex align-items-center text-decoration-none mb-4">
-      <i class="fas fa-calendar-day fa-lg me-2"></i>
-      <span class="fs-4 fw-bold">Gestor Citas</span>
-    </a>
+  <div class="container py-5">
+    <h3 class="fw-bold text-center mb-4">
+      Panel de Control del Bot
+      <span class="status-indicator" style="background-color: {{ 'green' if bot_status else 'gray' }}"></span>
+    </h3>
 
-    <ul class="nav nav-pills flex-column mb-auto">
-      <li class="nav-item mb-2"><a class="nav-link" href="{{ url_for('index') }}"><i class="fas fa-eye me-2"></i>Visión</a></li>
-      <li class="nav-item mb-2"><a class="nav-link" href="{{ url_for('agregar') }}"><i class="fas fa-user-plus me-2"></i>Agregar Usuario</a></li>
-      <li class="nav-item mb-2"><a class="nav-link active" href="{{ url_for('control_panel') }}"><i class="fas fa-robot me-2"></i>Control Bot</a></li>
-    </ul>
+    <div class="card p-4 shadow-sm mb-4">
 
-    <div class="mt-auto">
-      <a href="{{ url_for('logout') }}" class="btn btn-outline-light w-100 btn-exit">
-        <i class="fas fa-sign-out-alt me-2"></i>Salir
-      </a>
-    </div>
-  </div>
+      {% if not allowed_months %}
+        <div class="alert alert-warning mb-3" role="alert">
+          <b>¡Atención!</b> Debes definir un rango de meses para que el bot pueda buscar citas.
+        </div>
+      {% endif %}
 
-  <div class="content text-center">
-    <i class="fas fa-robot robot-icon mb-3"></i>
-    <h3 class="fw-bold mb-4">Panel de Control del Bot <span class="status-indicator"></span></h3>
-
-    <div class="card card-stat shadow-sm mb-4 p-4">
-      <p class="text-muted">
-        Tiempo actual de reintento: 
+      <p class="text-muted mb-1">
+        Tiempo actual de reintento:
         <strong>{{ interval_min }} minuto{{ 's' if interval_min != 1 else '' }} y {{ interval_sec }} segundo{{ 's' if interval_sec != 1 else '' }}</strong><br>
-        Hora actual: <strong>{{ current_time }}</strong><br>
-        Próximo intento estimado: <strong>{{ next_attempt }}</strong>
+        Hora actual: <strong id="current-time">{{ current_time }}</strong><br>
+        Próximo intento estimado: <strong id="next-attempt">{{ next_attempt }}</strong>
       </p>
-      <form id="config-form" class="row g-3">
+      <div class="row g-3 mt-3">
         <div class="col-md-3">
           <label for="minutes" class="form-label">Minutos</label>
           <input type="number" id="minutes" class="form-control" min="0" value="{{ interval_min }}">
@@ -110,55 +54,69 @@
           <input type="number" id="refreshSeconds" class="form-control" min="5" value="{{ refresh_seconds }}">
         </div>
         <div class="col-md-3">
+          <label for="workers" class="form-label">Navegadores</label>
+          <input type="number" id="workers" class="form-control" min="1" value="{{ max_workers }}">
+        </div>
+        <div class="col-md-3">
           <label for="startMonth" class="form-label">Mes inicio</label>
           <select id="startMonth" class="form-select">
+            <option value="">Selecciona mes de inicio</option>
+            {% set min_month = allowed_months|min if allowed_months else '' %}
             {% for m in range(1,13) %}
-            <option value="{{ m }}" {% if m in allowed_months %}selected{% endif %}>{{ ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][m-1] }}</option>
+              <option value="{{ m }}" {% if allowed_months and m == min_month %}selected{% endif %}>
+                {{ ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][m-1] }}
+              </option>
             {% endfor %}
           </select>
         </div>
         <div class="col-md-3">
           <label for="endMonth" class="form-label">Mes fin</label>
           <select id="endMonth" class="form-select">
+            <option value="">Selecciona mes de fin</option>
+            {% set max_month = allowed_months|max if allowed_months else '' %}
             {% for m in range(1,13) %}
-            <option value="{{ m }}" {% if m in allowed_months %}selected{% endif %}>{{ ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][m-1] }}</option>
+              <option value="{{ m }}" {% if allowed_months and m == max_month %}selected{% endif %}>
+                {{ ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][m-1] }}
+              </option>
             {% endfor %}
           </select>
         </div>
         <div class="col-md-3">
-          <label for="workers" class="form-label">Navegadores</label>
-          <input type="number" id="workers" class="form-control" min="1" value="{{ max_workers }}">
+          <label for="allowedYear" class="form-label">Año objetivo</label>
+          <input type="number" id="allowedYear" class="form-control" min="2024" max="2100" value="{{ allowed_year }}">
         </div>
-        <div class="col-12 d-flex gap-2 mt-3 justify-content-center">
-          <button type="button" id="save-btn" class="btn btn-light text-primary flex-fill">
-            <i class="fas fa-save me-2"></i>Guardar Intervalo
-          </button>
-          <button type="button" id="save-refresh-btn" class="btn btn-light text-primary flex-fill">
-            <i class="fas fa-sync-alt me-2"></i>Guardar Refresco
-          </button>
-          <button type="button" id="save-range-btn" class="btn btn-light text-primary flex-fill">
-            <i class="fas fa-calendar-alt me-2"></i>Guardar Rango
-          </button>
-          <button type="button" id="save-workers-btn" class="btn btn-light text-primary flex-fill">
-            <i class="fas fa-network-wired me-2"></i>Guardar Navegadores
-          </button>
-        </div>
-      </form>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" id="save-btn" class="btn btn-primary flex-fill">
+          <i class="fas fa-save me-2"></i>Guardar Intervalo
+        </button>
+        <button type="button" id="save-refresh-btn" class="btn btn-primary flex-fill">
+          <i class="fas fa-sync-alt me-2"></i>Guardar Refresco
+        </button>
+        <button type="button" id="save-range-btn" class="btn btn-primary flex-fill">
+          <i class="fas fa-calendar-alt me-2"></i>Guardar Rango
+        </button>
+        <button type="button" id="save-year-btn" class="btn btn-primary flex-fill">
+          <i class="fas fa-calendar me-2"></i>Guardar Año
+        </button>
+        <button type="button" id="save-workers-btn" class="btn btn-primary flex-fill">
+          <i class="fas fa-network-wired me-2"></i>Guardar Navegadores
+        </button>
+      </div>
     </div>
 
-    <div class="d-flex gap-3 mb-4 justify-content-center">
-      <button id="start-btn" class="btn btn-light text-success w-50">
+    <div class="d-flex gap-3 justify-content-center">
+      <button id="start-btn" class="btn btn-success w-50">
         <i class="fas fa-play me-2"></i>Iniciar Bot
       </button>
-      <button id="stop-btn" class="btn btn-light text-danger w-50">
+      <button id="stop-btn" class="btn btn-danger w-50">
         <i class="fas fa-stop me-2"></i>Detener Bot
       </button>
     </div>
 
-    <div id="status" class="alert alert-info d-none w-75 mx-auto"></div>
+    <div id="status" class="alert alert-info d-none w-75 mx-auto mt-3"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const statusBox = document.getElementById('status');
     function showStatus(msg, cls='info') {
@@ -193,9 +151,20 @@
 
     document.getElementById('save-range-btn').addEventListener('click', e => {
       e.preventDefault();
+      if (!startMonth.value || !endMonth.value) {
+        showStatus("Debes seleccionar ambos meses.", "warning");
+        return;
+      }
       postJSON('/config_range', {
         start_month: +startMonth.value,
         end_month: +endMonth.value
+      });
+    });
+
+    document.getElementById('save-year-btn').addEventListener('click', e => {
+      e.preventDefault();
+      postJSON('/config_year', {
+        year: +allowedYear.value
       });
     });
 
@@ -221,8 +190,8 @@
         const res = await fetch('/control_data');
         if (!res.ok) return;
         const data = await res.json();
-        document.querySelector('strong:nth-of-type(2)').textContent = data.current_time;
-        document.querySelector('strong:nth-of-type(3)').textContent = data.next_attempt;
+        document.getElementById('current-time').textContent = data.current_time;
+        document.getElementById('next-attempt').textContent = data.next_attempt;
       } catch (e) {
         console.error("Error actualizando tiempos:", e);
       }
