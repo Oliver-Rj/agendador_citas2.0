@@ -13,7 +13,8 @@ class Perfil(db.Model):
     contrasena_portal = db.Column(db.String(100), nullable=False)
     estado = db.Column(db.String(50), default='pendiente')
     cita_confirmada = db.Column(db.Boolean, default=False)
-    schedule_code = db.Column(db.String(255))  # 👈 Este es el nuevo campo
+    schedule_code = db.Column(db.String(255))
+    id_usuario_cita = db.Column(db.String(100), nullable=True)  # Campo necesario
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):

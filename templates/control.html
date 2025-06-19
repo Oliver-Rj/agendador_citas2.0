@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -115,6 +114,27 @@
     </div>
 
     <div id="status" class="alert alert-info d-none w-75 mx-auto mt-3"></div>
+
+    <div class="card p-3 shadow-sm mt-5">
+      <h5 class="mb-3">Estado de Perfiles</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm text-center align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Estado</th>
+              <th>Cita Confirmada</th>
+              <th>Usuario Portal</th>
+            </tr>
+          </thead>
+          <tbody id="perfiles-body">
+            <tr><td colspan="6">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -196,6 +216,32 @@
         console.error("Error actualizando tiempos:", e);
       }
     }, 5000);
+
+    async function updatePerfilesStatus() {
+      try {
+        const res = await fetch('/perfiles_status');
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('perfiles-body');
+        tbody.innerHTML = '';
+        for (const p of data) {
+          const row = `<tr>
+            <td>${p.id}</td>
+            <td>${p.nombre}</td>
+            <td>${p.correo}</td>
+            <td>${p.estado}</td>
+            <td>${p.cita_confirmada ? '✅' : '❌'}</td>
+            <td>${p.usuario_cita || ''}</td>
+          </tr>`;
+          tbody.insertAdjacentHTML('beforeend', row);
+        }
+      } catch (e) {
+        console.error("Error actualizando estado de perfiles:", e);
+      }
+    }
+
+    setInterval(updatePerfilesStatus, 5000);
+    updatePerfilesStatus();
   </script>
 </body>
 </html>

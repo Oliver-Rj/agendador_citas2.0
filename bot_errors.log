@@ -1,0 +1,264 @@
+2025-06-15 12:53:45,384 - INFO - 127.0.0.1 - - [15/Jun/2025 12:53:45] "POST /start_bot HTTP/1.1" 200 -
+2025-06-15 12:53:48,818 - INFO - 127.0.0.1 - - [15/Jun/2025 12:53:48] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:53:53,826 - INFO - 127.0.0.1 - - [15/Jun/2025 12:53:53] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:53:58,836 - INFO - 127.0.0.1 - - [15/Jun/2025 12:53:58] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:03,820 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:03] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:08,831 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:08] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:13,824 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:13] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:14,196 - ERROR - Redirección fallida desde grupos. Screenshot: error_groups_18.png
+Traceback (most recent call last):
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 80, in login_and_capture
+    WebDriverWait(driver, 15).until(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        EC.url_contains(f"/schedule/{profile.schedule_code}/appointment")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py", line 138, in until
+    raise TimeoutException(message, screen, stacktrace)
+selenium.common.exceptions.TimeoutException: Message: 
+
+2025-06-15 12:54:14,209 - ERROR - Error para perfil ID 18 (Noraidabeltre8@gmail.com): Message: 
+Traceback (most recent call last):
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 164, in schedule_for
+    driver, session, base = login_and_capture(profile)
+                            ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 80, in login_and_capture
+    WebDriverWait(driver, 15).until(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        EC.url_contains(f"/schedule/{profile.schedule_code}/appointment")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py", line 138, in until
+    raise TimeoutException(message, screen, stacktrace)
+selenium.common.exceptions.TimeoutException: Message: 
+
+2025-06-15 12:54:18,835 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:18] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:24,198 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:24] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:29,189 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:29] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:34,200 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:34] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:39,181 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:39] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:44,184 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:44] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:49,199 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:49] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:54,200 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:54] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:54:59,191 - INFO - 127.0.0.1 - - [15/Jun/2025 12:54:59] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:55:04,188 - INFO - 127.0.0.1 - - [15/Jun/2025 12:55:04] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:55:09,187 - INFO - 127.0.0.1 - - [15/Jun/2025 12:55:09] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:55:14,190 - INFO - 127.0.0.1 - - [15/Jun/2025 12:55:14] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:55:19,194 - INFO - 127.0.0.1 - - [15/Jun/2025 12:55:19] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:56:17,189 - INFO - 127.0.0.1 - - [15/Jun/2025 12:56:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:57:17,187 - INFO - 127.0.0.1 - - [15/Jun/2025 12:57:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:58:17,194 - INFO - 127.0.0.1 - - [15/Jun/2025 12:58:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:15,265 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:15] "POST /start_bot HTTP/1.1" 200 -
+2025-06-15 12:59:18,188 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:18] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:23,193 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:23] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:28,194 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:28] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:33,199 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:33] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:37,904 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:37] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:39,971 - ERROR - No se detectó endpoint XHR. Screenshot: error_no_endpoint_18.png
+2025-06-15 12:59:40,006 - ERROR - Error para perfil ID 18 (Noraidabeltre8@gmail.com): No se detectó endpoint XHR automáticamente
+Traceback (most recent call last):
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 147, in schedule_for
+    driver, session, base = login_and_capture(profile)
+                            ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 99, in login_and_capture
+    raise RuntimeError("No se detectó endpoint XHR automáticamente")
+RuntimeError: No se detectó endpoint XHR automáticamente
+2025-06-15 12:59:42,906 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:42] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:47,910 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:47] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:53,193 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:53] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 12:59:58,189 - INFO - 127.0.0.1 - - [15/Jun/2025 12:59:58] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:03,189 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:03] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:08,205 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:08] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:13,181 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:13] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:18,193 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:18] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:23,200 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:23] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:28,193 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:28] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:33,207 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:33] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:38,193 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:38] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:43,199 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:43] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:00:48,204 - INFO - 127.0.0.1 - - [15/Jun/2025 13:00:48] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:01:17,216 - INFO - 127.0.0.1 - - [15/Jun/2025 13:01:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:02:17,188 - INFO - 127.0.0.1 - - [15/Jun/2025 13:02:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:03:38,263 - INFO - 127.0.0.1 - - [15/Jun/2025 13:03:38] "POST /start_bot HTTP/1.1" 200 -
+2025-06-15 13:03:42,188 - INFO - 127.0.0.1 - - [15/Jun/2025 13:03:42] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:03:47,194 - INFO - 127.0.0.1 - - [15/Jun/2025 13:03:47] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:03:52,184 - INFO - 127.0.0.1 - - [15/Jun/2025 13:03:52] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:03:56,796 - INFO - 127.0.0.1 - - [15/Jun/2025 13:03:56] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:03:58,559 - ERROR - No se detectó endpoint XHR. Screenshot: error_no_endpoint_18.png
+2025-06-15 13:03:58,573 - ERROR - Error para perfil ID 18 (Noraidabeltre8@gmail.com): No se detectó endpoint XHR automáticamente
+Traceback (most recent call last):
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 148, in schedule_for
+    driver, session, base = login_and_capture(profile)
+                            ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 100, in login_and_capture
+    raise RuntimeError("No se detectó endpoint XHR automáticamente")
+RuntimeError: No se detectó endpoint XHR automáticamente
+2025-06-15 13:04:01,827 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:01] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:06,789 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:06] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:12,178 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:12] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:17,188 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:22,176 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:22] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:27,183 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:27] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:32,192 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:32] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:37,184 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:37] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:42,192 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:42] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:47,196 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:47] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:52,192 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:52] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:04:57,196 - INFO - 127.0.0.1 - - [15/Jun/2025 13:04:57] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:05:02,196 - INFO - 127.0.0.1 - - [15/Jun/2025 13:05:02] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:05:07,186 - INFO - 127.0.0.1 - - [15/Jun/2025 13:05:07] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:05:17,203 - INFO - 127.0.0.1 - - [15/Jun/2025 13:05:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:06:17,193 - INFO - 127.0.0.1 - - [15/Jun/2025 13:06:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:07:17,197 - INFO - 127.0.0.1 - - [15/Jun/2025 13:07:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:08:17,194 - INFO - 127.0.0.1 - - [15/Jun/2025 13:08:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:09:17,215 - INFO - 127.0.0.1 - - [15/Jun/2025 13:09:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:09:29,672 - ERROR - No se detectó endpoint XHR. Screenshot: error_no_endpoint_18.png
+2025-06-15 13:09:29,679 - ERROR - Error para perfil ID 18 (Noraidabeltre8@gmail.com): No se detectó endpoint XHR automáticamente
+Traceback (most recent call last):
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 148, in schedule_for
+    driver, session, base = login_and_capture(profile)
+                            ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 100, in login_and_capture
+    raise RuntimeError("No se detectó endpoint XHR automáticamente")
+RuntimeError: No se detectó endpoint XHR automáticamente
+2025-06-15 13:10:17,194 - INFO - 127.0.0.1 - - [15/Jun/2025 13:10:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:11:17,198 - INFO - 127.0.0.1 - - [15/Jun/2025 13:11:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:00,950 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:00] "POST /start_bot HTTP/1.1" 200 -
+2025-06-15 13:14:02,390 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:02] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:07,247 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:07] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:12,273 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:12] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:17,190 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:20,564 - ERROR - No se detectó endpoint XHR. Screenshot: error_no_endpoint_18.png
+2025-06-15 13:14:20,580 - ERROR - Error para perfil ID 18 (Noraidabeltre8@gmail.com): No se detectó endpoint XHR automáticamente
+Traceback (most recent call last):
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 158, in schedule_for
+    driver, session, base = login_and_capture(profile)
+                            ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 110, in login_and_capture
+    raise RuntimeError("No se detectó endpoint XHR automáticamente")
+RuntimeError: No se detectó endpoint XHR automáticamente
+2025-06-15 13:14:22,167 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:22] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:27,168 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:27] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:32,179 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:32] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:37,177 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:37] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:42,268 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:42] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:47,189 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:47] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:52,194 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:52] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:14:57,186 - INFO - 127.0.0.1 - - [15/Jun/2025 13:14:57] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:02,191 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:02] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:07,187 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:07] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:12,190 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:12] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:17,198 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:22,190 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:22] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:27,189 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:27] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:32,200 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:32] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:37,194 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:37] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:15:42,262 - INFO - 127.0.0.1 - - [15/Jun/2025 13:15:42] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:16:17,424 - INFO - 127.0.0.1 - - [15/Jun/2025 13:16:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:17:17,188 - INFO - 127.0.0.1 - - [15/Jun/2025 13:17:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:18:17,181 - INFO - 127.0.0.1 - - [15/Jun/2025 13:18:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:19:17,205 - INFO - 127.0.0.1 - - [15/Jun/2025 13:19:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:19:53,490 - ERROR - No se detectó endpoint XHR. Screenshot: error_no_endpoint_18.png
+2025-06-15 13:19:53,500 - ERROR - Error para perfil ID 18 (Noraidabeltre8@gmail.com): No se detectó endpoint XHR automáticamente
+Traceback (most recent call last):
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 158, in schedule_for
+    driver, session, base = login_and_capture(profile)
+                            ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 110, in login_and_capture
+    raise RuntimeError("No se detectó endpoint XHR automáticamente")
+RuntimeError: No se detectó endpoint XHR automáticamente
+2025-06-15 13:20:17,324 - INFO - 127.0.0.1 - - [15/Jun/2025 13:20:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:21:17,194 - INFO - 127.0.0.1 - - [15/Jun/2025 13:21:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:22:17,202 - INFO - 127.0.0.1 - - [15/Jun/2025 13:22:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:23:17,186 - INFO - 127.0.0.1 - - [15/Jun/2025 13:23:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:24:17,199 - INFO - 127.0.0.1 - - [15/Jun/2025 13:24:17] "GET /control_data HTTP/1.1" 200 -
+2025-06-15 13:25:11,976 - ERROR - Error para perfil ID 18 (Noraidabeltre8@gmail.com): ('Connection aborted.', ConnectionResetError(10054, 'Se ha forzado la interrupción de una conexión existente por el host remoto', None, 10054, None))
+Traceback (most recent call last):
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 1430, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\socket.py", line 719, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+ConnectionResetError: [WinError 10054] Se ha forzado la interrupción de una conexión existente por el host remoto
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 158, in schedule_for
+    r.raise_for_status()
+    
+  File "C:\Users\olive\Desktop\agendador_citas\automation.py", line 45, in login_and_capture
+    except:
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 472, in get
+    self.execute(Command.GET, {"url": url})
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 445, in execute
+    response = self.command_executor.execute(driver_command, params)
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\remote\remote_connection.py", line 404, in execute
+    return self._request(command_info[0], url, body=data)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\remote\remote_connection.py", line 428, in _request
+    response = self._conn.request(method, url, body=body, headers=headers, timeout=self._client_config.timeout)
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\_request_methods.py", line 143, in request
+    return self.request_encode_body(
+           ~~~~~~~~~~~~~~~~~~~~~~~~^
+        method, url, fields=fields, headers=headers, **urlopen_kw
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\_request_methods.py", line 278, in request_encode_body
+    return self.urlopen(method, url, **extra_kw)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\poolmanager.py", line 443, in urlopen
+    response = conn.urlopen(method, u.request_uri, **kw)
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connection.py", line 516, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 1430, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\olive\AppData\Local\Programs\Python\Python313\Lib\socket.py", line 719, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+urllib3.exceptions.ProtocolError: ('Connection aborted.', ConnectionResetError(10054, 'Se ha forzado la interrupción de una conexión existente por el host remoto', None, 10054, None))
