@@ -367,29 +367,6 @@ def schedule_for(profile, app, stop_event=None):
              continue
 
        print(f"Cmpletado")       
-       human_pause()
-
-       WebDriverWait(driver, 8).until(
-            EC.element_to_be_clickable((By.ID, 'appointments_submit'))
-       ).click()
-
-       WebDriverWait(driver, 8).until(
-            EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'button') and contains(@class, 'alert') and text()='Confirmar']"))
-       ).click()
-
-       WebDriverWait(driver, 8).until(EC.url_contains('/confirmation'))
-       conf = WebDriverWait(driver, 5).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, '.confirmation-number'))
-       ).text
-
-       print("✅ Confirmación obtenida:", conf)
-       with app.app_context():
-            p = Perfil.query.get(profile.id)
-            p.estado = 'reagendado'
-            p.cita_confirmada = True
-            p.id_usuario_cita = conf
-            db.session.commit()
-       driver.quit()
 
     except Exception as e:
         print("❌ Error schedule_for:", e)
@@ -399,6 +376,264 @@ def schedule_for(profile, app, stop_event=None):
             p.estado = 'pendiente'
             db.session.commit()  
     
+    
+    
+    
+    
+    
+    return
+    try:
+
+       driver, session = login_and_capture(profile, app)
+       allowed_months = app.config.get('ALLOWED_MONTHS', [])
+       allowed_year = app.config.get('ALLOWED_YEAR', datetime.datetime.now().year)
+
+       human_pause(3,4)
+
+       WebDriverWait(driver, 10).until(
+         EC.element_to_be_clickable((By.CSS_SELECTOR, '#main > div:nth-child(2) > div.mainContent > div:nth-child(1) > div > div > div:nth-child(1) > div.medium-6.columns.text-right > ul > li > a'))
+       ).click()
+
+       human_pause(3,4)
+
+       print(f"🌀 Explorando {allowed_year} meses {allowed_months}")
+       driver.get(f"https://ais.usvisa-info.com/es-do/niv/schedule/{profile.schedule_code}/appointment")
+       print(f"🌀 vALOR {driver} ")
+
+       WebDriverWait(driver, 10).until(
+         EC.element_to_be_clickable((By.ID, 'appointments_consulate_appointment_date'))
+       ).click()
+
+       date_consular_encontrada = False
+       hora_consular_encontrada = False
+       date_huella_encontrada = False 
+       hora_huella_encontrada = False      
+
+       continue_date_consulate_search_cycle = True
+       while continue_date_consulate_search_cycle:
+
+           date_consular_encontrada = False
+           hora_consular_encontrada = False
+           date_huella_encontrada = False 
+           hora_huella_encontrada = False 
+           for fecha_consular in driver.find_elements(By.CSS_SELECTOR, 'td[data-handler="selectDay"] a'):
+
+             fecha_consular.click()  
+             date_consular_encontrada = True
+             human_pause()
+             #print(f"Valor de ciclo 6")  
+             WebDriverWait(driver, 10).until(
+              EC.presence_of_element_located((By.ID, 'appointments_consulate_appointment_time'))
+             )
+             #print(f"Valor de ciclo 7")
+             select_hora_consular = Select(driver.find_element(By.ID, 'appointments_consulate_appointment_time'))
+             # print(f"Valor de ciclo 8") 
+             opciones_hora_consular = [o.text.strip() for o in select_hora_consular.options if o.text.strip()]
+
+             #print(f"oPCIONES HORA CONSULAR: {opciones_hora_consular}")
+             hora_consular_encontrada = False
+             date_huella_encontrada = False 
+             hora_huella_encontrada = False
+             for hora_consular in opciones_hora_consular:
+ 
+              Select(driver.find_element(By.ID, 'appointments_consulate_appointment_time')).select_by_visible_text(hora_consular)
+              hora_consular_encontrada = True
+              human_pause()
+            
+              #appointments_asc_appointment_date_list = driver.find_elements(By.CSS_SELECTOR, '#appointments_asc_appointment_date') 
+              #if not appointments_asc_appointment_date_list:
+              #  continue
+            
+              try:
+                WebDriverWait(driver, 10).until(
+                  EC.element_to_be_clickable((By.ID, 'appointments_asc_appointment_date'))
+                ).click()
+              except Exception as e:
+                print(f"❌ Error al obtener fecha ASC: {e}")
+                continue
+
+              #print(f"MOSTEANDO 1 {appointments_asc_appointment_date_list}")
+              
+              print(f"MOSTEANDO 2") 
+              continue_date_huella_search_cycle = True
+              date_huella_encontrada = False 
+              hora_huella_encontrada = False
+              while continue_date_huella_search_cycle:  
+
+                 date_huella_encontrada = False 
+                 hora_huella_encontrada = False
+                 for fecha_huella in driver.find_elements(By.CSS_SELECTOR, 'td[data-handler="selectDay"] a'):
+                
+                    fecha_huella.click()  
+                    date_huella_encontrada = True
+                    human_pause()
+
+                    WebDriverWait(driver, 10).until(
+                       EC.presence_of_element_located((By.ID, 'appointments_asc_appointment_time'))
+                    )
+
+                    select_hora_huella = Select(driver.find_element(By.ID, 'appointments_asc_appointment_time'))
+                    # print(f"Valor de ciclo 8") 
+                    opciones_hora_huella = [o.text.strip() for o in select_hora_huella.options if o.text.strip()]
+                    hora_huella_encontrada = False    
+                    for hora_huella in opciones_hora_huella:
+
+                      Select(driver.find_element(By.ID, 'appointments_asc_appointment_time')).select_by_visible_text(hora_huella)
+                      hora_huella_encontrada = True
+                      human_pause() 
+                      continue_date_huella_search_cycle = False
+                      continue_date_consulate_search_cycle = False
+                      break
+
+                 if not continue_date_huella_search_cycle:          
+                    break
+              
+                 WebDriverWait(driver, 10).until(
+                  EC.element_to_be_clickable((By.CSS_SELECTOR, '#ui-datepicker-div > div.ui-datepicker-group.ui-datepicker-group-last > div > a'))
+                 ).click() 
+
+              if not continue_date_consulate_search_cycle:
+                  break 
+
+              WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, '#ui-datepicker-div > div.ui-datepicker-group.ui-datepicker-group-last > div > a'))
+              ).click() 
+             
+             if not continue_date_consulate_search_cycle:
+               break  
+          
+             WebDriverWait(driver, 10).until(
+               EC.element_to_be_clickable((By.CSS_SELECTOR, '#ui-datepicker-div > div.ui-datepicker-group.ui-datepicker-group-last > div > a'))
+             ).click() 
+          
+           if not continue_date_consulate_search_cycle:
+              break
+           
+           WebDriverWait(driver, 10).until(
+             EC.element_to_be_clickable((By.CSS_SELECTOR, '#ui-datepicker-div > div.ui-datepicker-group.ui-datepicker-group-last > div > a'))
+           ).click() 
+
+    except Exception as e:
+        print("❌ Error schedule_for:", e)
+        traceback.print_exc()
+        with app.app_context():
+            p = Perfil.query.get(profile.id)
+            p.estado = 'pendiente'
+            db.session.commit()    
+    
+    #a parti de aqui estaba todo lo de antes
+    return
+    try:
+        driver, session = login_and_capture(profile, app)
+        allowed_months = app.config.get('ALLOWED_MONTHS', [])
+        allowed_year = app.config.get('ALLOWED_YEAR', datetime.datetime.now().year)
+
+        
+
+
+        print(f"🌀 Explorando {allowed_year} meses {allowed_months}")
+        slot = None
+        empty_cycles = 0
+        #print(f"🌀 varl {sorted(allowed_months)}")
+        
+        while not slot:
+            for m in sorted(allowed_months):
+                days = list(range(1, month_days(allowed_year, m) + 1))
+             #   print(f"🌀 dyas {days}")
+            #    return
+                #for d in random.sample(days, len(days)):
+                for d in days:
+                    if stop_event and stop_event.is_set():
+                        return
+                    #print(f"🌀 day {d}")
+                    fecha_c = f"{allowed_year}-{m:02d}-{d:02d}"
+                    times_c = fetch_times(session, profile.schedule_code, CONSUL_ID, fecha_c, None)
+                    #times_c = None
+                    if not times_c:
+                        print(f"⚠️ No horarios API {fecha_c}, usando Selenium")
+                        times_c = fetch_times(session, profile.schedule_code, CONSUL_ID, fecha_c, driver)
+                        #times_c = None 
+
+                    human_pause(0.3, 0.6)
+                    #human_pause(4, 7)
+                    if not times_c:
+                        print(f"🔍 {fecha_c} → 0 cons (sin buscar ASC)")
+                        continue
+
+                    for offset in range(1, 8):
+                        fecha_a = (datetime.datetime.strptime(fecha_c, "%Y-%m-%d") + datetime.timedelta(days=offset)).strftime("%Y-%m-%d")
+                        times_a = fetch_times(session, profile.schedule_code, ASC_ID, fecha_a, None)
+                        if not times_a:
+                            print(f"⚠️ No horarios ASC API {fecha_a}, usando Selenium")
+                            times_a = fetch_times(session, profile.schedule_code, ASC_ID, fecha_a, driver)
+
+                        if times_a:
+                            slot = (fecha_c, times_c[0], fecha_a, times_a[0])
+                            print(f"🎯 Slot → CONSUL: {fecha_c} {times_c[0]} | ASC: {fecha_a} {times_a[0]}")
+                            break
+                    if slot: break
+                if slot: break
+
+            if not slot:
+                empty_cycles += 1
+                if empty_cycles % 5 == 0:
+                    print("🔄 Re-login")
+                    driver.quit()
+                    driver, session = login_and_capture(profile, app)
+                human_pause(2, 3)
+                #human_pause(4, 7)
+
+    
+        fecha_c, h_cons, fecha_a, h_asc = slot
+        driver.get(f"https://ais.usvisa-info.com/es-do/niv/schedule/{profile.schedule_code}/appointment")
+
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.ID, 'appointments_consulate_appointment_date'))
+        ).click()
+        for a in driver.find_elements(By.CSS_SELECTOR, 'td[data-handler="selectDay"] a'):
+            if a.text == fecha_c.split('-')[2]:
+                a.click()
+                break
+        human_pause()
+        Select(driver.find_element(By.ID, 'appointments_consulate_appointment_time')).select_by_visible_text(h_cons)
+
+        driver.find_element(By.ID, 'appointments_asc_appointment_date').click()
+        for a in driver.find_elements(By.CSS_SELECTOR, 'td[data-handler="selectDay"] a'):
+            if a.text == fecha_a.split('-')[2]:
+                a.click()
+                break
+        human_pause()
+        Select(driver.find_element(By.ID, 'appointments_asc_appointment_time')).select_by_visible_text(h_asc)
+
+        WebDriverWait(driver, 8).until(
+            EC.element_to_be_clickable((By.ID, 'appointments_submit'))
+        ).click()
+
+        WebDriverWait(driver, 8).until(
+            EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'button') and contains(@class, 'alert') and text()='Confirmar']"))
+        ).click()
+
+        WebDriverWait(driver, 8).until(EC.url_contains('/confirmation'))
+        conf = WebDriverWait(driver, 5).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, '.confirmation-number'))
+        ).text
+
+        print("✅ Confirmación obtenida:", conf)
+        with app.app_context():
+            p = Perfil.query.get(profile.id)
+            p.estado = 'reagendado'
+            p.cita_confirmada = True
+            p.id_usuario_cita = conf
+            db.session.commit()
+        driver.quit()
+
+    except Exception as e:
+        print("❌ Error schedule_for:", e)
+        traceback.print_exc()
+        with app.app_context():
+            p = Perfil.query.get(profile.id)
+            p.estado = 'pendiente'
+            db.session.commit()
 
 def get_pending_profiles(app):
     with app.app_context():
